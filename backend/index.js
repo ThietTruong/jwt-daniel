@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 
 const authRoute = require('./routers/auth.router');
+const userRoute = require('./routers/user.router')
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 
 // routers
 app.use('/api-v1/auth', authRoute);
+app.use('/api-v1/user', userRoute);
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
