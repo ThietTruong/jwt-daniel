@@ -13,6 +13,7 @@ const jwtServices = {
   },
   signRefreshToken: (payload) => {
     const expirationTime = "7d";
+    const expirationTimeRedis = 7 * 24 * 60 * 60;
     if (!payload) {
       return null;
     }
@@ -26,12 +27,19 @@ const jwtServices = {
             reject(err);
           }
 
-          client.set(payload.userId.toString(), token, (err, reply) => {
-            if (err) {
-              reject(err);
+          client.set(
+            payload.userId.toString(),
+            token,
+            {
+              EX: expirationTimeRedis,
+            },
+            (err, reply) => {
+              if (err) {
+                reject(err);
+              }
+              resolve(token);
             }
-            resolve(token);
-          });
+          );
           resolve(token);
         }
       );
