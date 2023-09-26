@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const client = require("./connections_redis");
 
 const jwtServices = {
   signToken: async (payload) => {
@@ -11,8 +12,29 @@ const jwtServices = {
     });
   },
   signRefreshToken: (payload) => {
-    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
-      expiresIn: "7d",
+    const expirationTime = "7d";
+    if (!payload) {
+      return null;
+    }
+    return new Promise((resolve, reject) => {
+      jwt.sign(
+        payload,
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: expirationTime },
+        (err, token) => {
+          if (err) {
+            reject(err);
+          }
+
+          client.set(payload.userId.toString(), token, (err, reply) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(token);
+          });
+          resolve(token);
+        }
+      );
     });
   },
   verifyToken: (req, res, next) => {
@@ -29,22 +51,30 @@ const jwtServices = {
       next();
     });
   },
-  verifyRefreshToken: (req, res, next) => {
+  verifyRefreshToken: async (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
+
     if (!refreshToken) {
       return res.status(403).json({ message: "No refreshToken provided" });
     }
-    jwt.verify(
-      refreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-      (err, decoded) => {
-        if (err) {
-          return res.status(401).json({ message: "Unauthorized" });
-        }
-        req.user = decoded;
-        next();
+
+    try {
+      const decoded = await jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+      );
+
+      const payload = await client.get(decoded.userId);
+
+      if (payload.toString() !== refreshToken) {
+        return res.status(403).json({ message: "Unauthorized" });
       }
-    );
+
+      req.user = decoded;
+      next();
+    } catch (err) {
+      return res.status(500).json({ message: err.message });
+    }
   },
   verifyTokenWithAdmin: (req, res, next) => {
     const token = req.headers.token;
@@ -64,6 +94,7 @@ const jwtServices = {
     });
   },
 };
+
 // Storage Token
 // 1) Local storage
 // XSS

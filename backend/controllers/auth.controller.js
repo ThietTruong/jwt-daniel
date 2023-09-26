@@ -57,22 +57,19 @@ const authController = {
       return res.status(200).json({ user: userData, accessToken });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ error: "Login failed" });
+      return res.status(400).json({ error: "Login failed" });
     }
   },
   refreshToken: async (req, res) => {
     const user = req.user;
+
     if (!user) return res.status(401).json({ message: "Unauthorized" });
     const accessToken = await jwtServices.signToken({
       userId: user._id,
       admin: user.admin,
     });
-    console.log(
-      "🚀 ~ file: auth.controller.js:70 ~ refreshToken: ~ accessToken:",
-      accessToken
-    );
-    const refreshToken = await jwtServices.signRefreshToken({
-      userId: user._id,
+    const refreshToken = jwtServices.signRefreshToken({
+      userId: user.userId,
       admin: user.admin,
     });
     res.cookie("refreshToken", refreshToken, {
