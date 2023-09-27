@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const jwtServices = require("../heplers/jwt_services");
+const client = require("../heplers/connections_redis");
 const authController = {
   registerUser: async (req, res) => {
     try {
@@ -68,7 +69,7 @@ const authController = {
       userId: user._id,
       admin: user.admin,
     });
-    const refreshToken = jwtServices.signRefreshToken({
+    const refreshToken = await jwtServices.signRefreshToken({
       userId: user.userId,
       admin: user.admin,
     });
@@ -79,6 +80,24 @@ const authController = {
       sameSite: "strict",
     });
     return res.status(200).json({ accessToken });
+  },
+  logout: async (req, res) => {
+    const user = req.user;
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.sendStatus(204);
+    console.log(
+      "🚀 ~ file: auth.controller.js:88 ~ logout: ~ refreshToken:",
+      refreshToken
+    );
+    console.log("🚀 ~ file: auth.controller.js:90 ~ logout: ~ user:", user);
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    const isDelRefreshToken = await client.del(user.userId.toString());
+    if (isDelRefreshToken === 0)
+      return res.status(401).json({ message: "Unauthorized" });
+    if (isDelRefreshToken === 1) {
+      res.clearCookie("refreshToken");
+      return res.json({ message: "Logout success" });
+    }
   },
 };
 

@@ -9,5 +9,6 @@ router.post(
   jwtServices.verifyRefreshToken,
   authController.refreshToken
 );
+router.post("/logout", jwtServices.verifyRefreshToken, authController.logout);
 
 module.exports = router;
