@@ -27,6 +27,7 @@ app.get("/", (req, res) => {
 });
 
 // routers
+
 app.use("/api-v1/auth", authRoute);
 app.use("/api-v1/user", userRoute);
 

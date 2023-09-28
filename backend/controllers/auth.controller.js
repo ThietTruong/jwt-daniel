@@ -85,11 +85,6 @@ const authController = {
     const user = req.user;
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.sendStatus(204);
-    console.log(
-      "🚀 ~ file: auth.controller.js:88 ~ logout: ~ refreshToken:",
-      refreshToken
-    );
-    console.log("🚀 ~ file: auth.controller.js:90 ~ logout: ~ user:", user);
     if (!user) return res.status(401).json({ message: "Unauthorized" });
     const isDelRefreshToken = await client.del(user.userId.toString());
     if (isDelRefreshToken === 0)
