@@ -1,6 +1,13 @@
 import axios from "axios";
 
-import { loginStart, loginSuccess, loginFailure } from "./authSlice";
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+  registerSuccess,
+  registerFailure,
+  registerStart,
+} from "./authSlice";
 
 export const loginUser = async (user, dispatch, navigator) => {
   dispatch(loginStart());
@@ -13,5 +20,17 @@ export const loginUser = async (user, dispatch, navigator) => {
     navigator("/");
   } catch (error) {
     dispatch(loginFailure());
+  }
+};
+
+export const registerUser = async (user, dispatch, navigator) => {
+  dispatch(registerStart());
+  try {
+    await axios.post("http://localhost:4000/api-v1/auth/register", user);
+    dispatch(registerSuccess());
+    navigator("/login");
+  } catch (error) {
+    console.error(error);
+    dispatch(registerFailure());
   }
 };
