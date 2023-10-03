@@ -1,47 +1,47 @@
+import { useDispatch, useSelector } from "react-redux";
 import "./home.css";
+import { useEffect } from "react";
+import { getAllUsers } from "../../app/apiRequest";
+import { useNavigate } from "react-router-dom";
+import { deleteUser } from "../../app/apiRequest";
 
 const HomePage = () => {
-  //DUMMY DATA
-  const userData = [
-    {
-      username: "anhduy1202",
-    },
-    {
-      username: "kelly1234",
-    },
-    {
-      username: "danny5678",
-    },
-    {
-      username: "kenny1122",
-    },
-    {
-      username: "jack1234",
-    },
-    {
-      username: "loi1202",
-    },
-    {
-      username: "nhinhi2009",
-    },
-    {
-      username: "kellynguyen1122",
-    },
-    
-  ];
+  const user = useSelector((state) => state.auth.login?.currentUser);
+  const userList = useSelector((state) => state.users?.allUser);
+  const msg = useSelector((state) => state.users?.msg);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!user) return navigate("/login");
+    getAllUsers(user?.accessToken, dispatch);
+  }, []);
+  const handleDelete = (id) => {
+    deleteUser(id, user.accessToken, dispatch);
+  };
   return (
     <main className="home-container">
       <div className="home-title">User List</div>
+      <div className="home-role">
+        {`Your role is ${user?.admin ? "Admin" : "User"}`}
+      </div>
       <div className="home-userlist">
-        {userData.map((user) => {
+        {userList?.map((user) => {
           return (
-            <div className="user-container">
+            <div className="user-container" key={user._id}>
               <div className="home-user">{user.username}</div>
-              <div className="delete-user"> Delete </div>
+              <div
+                className="delete-user"
+                onClick={() => handleDelete(user._id)}
+              >
+                {" "}
+                Delete{" "}
+              </div>
             </div>
           );
         })}
       </div>
+      {msg ? <div className="home-msg">{msg}</div> : null}
     </main>
   );
 };
