@@ -10,11 +10,11 @@ const authRoute = require("./routers/auth.router");
 const userRoute = require("./routers/user.router");
 
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 8000;
 mongoose.set("strictQuery", false);
 
 dotenv.config();
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());

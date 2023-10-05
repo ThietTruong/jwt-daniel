@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../app/apiRequest";
+
 import "./register.css";
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
   const handleRegister = (e) => {
     e.preventDefault();
     registerUser({ email, username, password }, dispatch, navigate);

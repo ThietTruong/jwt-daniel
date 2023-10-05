@@ -5,10 +5,15 @@ const jwtServices = {
   signToken: async (payload) => {
     if (!payload) return;
     return new Promise((resolve, reject) => {
-      jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, (err, token) => {
-        if (err) reject(err);
-        resolve(token);
-      });
+      jwt.sign(
+        payload,
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "30s" },
+        (err, token) => {
+          if (err) reject(err);
+          resolve(token);
+        }
+      );
     });
   },
   signRefreshToken: (payload) => {

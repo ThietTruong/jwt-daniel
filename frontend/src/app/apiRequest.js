@@ -1,5 +1,4 @@
 import axios from "axios";
-
 import {
   loginStart,
   loginSuccess,
@@ -7,6 +6,9 @@ import {
   registerSuccess,
   registerFailure,
   registerStart,
+  logoutStart,
+  logoutSuccess,
+  logoutFailure,
 } from "./authSlice";
 
 import {
@@ -22,8 +24,9 @@ export const loginUser = async (user, dispatch, navigator) => {
   dispatch(loginStart());
   try {
     const res = await axios.post(
-      "http://localhost:4000/api-v1/auth/login",
-      user
+      "http://localhost:8000/api-v1/auth/login",
+      user,
+      { withCredentials: true }
     );
     dispatch(loginSuccess(res.data));
     navigator("/");
@@ -35,7 +38,7 @@ export const loginUser = async (user, dispatch, navigator) => {
 export const registerUser = async (user, dispatch, navigator) => {
   dispatch(registerStart());
   try {
-    await axios.post("http://localhost:4000/api-v1/auth/register", user);
+    await axios.post("http://localhost:8000/api-v1/auth/register", user);
     dispatch(registerSuccess());
     navigator("/login");
   } catch (error) {
@@ -44,24 +47,25 @@ export const registerUser = async (user, dispatch, navigator) => {
   }
 };
 
-export const getAllUsers = async (accessToken, dispatch) => {
+export const getAllUsers = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getUsersStart());
-  const res = await axios.get("http://localhost:4000/api-v1/user", {
-    headers: {
-      token: "Bearer " + accessToken,
-    },
-  });
+
   try {
+    const res = await axios.get("http://localhost:8000/api-v1/user", {
+      headers: {
+        token: "Bearer " + accessToken,
+      },
+    });
     dispatch(getUsersSuccess(res.data));
   } catch (error) {
     dispatch(getUsersFailure());
   }
 };
 
-export const deleteUser = async (id, accessToken, dispatch) => {
+export const deleteUser = async (id, accessToken, dispatch, axiosJWT) => {
   dispatch(deleteUserStart());
   try {
-    const res = await axios.delete(`http://localhost:4000/api-v1/user/${id}`, {
+    const res = await axiosJWT.delete(`/api-v1/user/${id}`, {
       headers: {
         token: "Bearer " + accessToken,
       },
@@ -74,5 +78,30 @@ export const deleteUser = async (id, accessToken, dispatch) => {
     );
   } catch (error) {
     dispatch(deleteUserFailure("Delete user failed"));
+  }
+};
+
+export const logout = async (
+  id,
+  accessToken,
+  dispatch,
+  navigator,
+  axiosJWT
+) => {
+  dispatch(logoutStart());
+  try {
+    await axiosJWT.pos t(
+      "/api-v1/auth/logout",
+      {},
+      {
+        headers: {
+          token: "Bearer " + accessToken,
+        },
+      }
+    );
+    dispatch(logoutSuccess());
+    navigator("/login");
+  } catch (error) {
+    dispatch(logoutFailure());
   }
 };
